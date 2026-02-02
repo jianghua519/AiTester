@@ -1,0 +1,152 @@
+linters:
+  enable:
+    - gofmt
+    - govet
+    - golint
+    - goimports
+    - staticcheck
+    - ineffassign
+    - misspell
+    - gosec
+    - gocyclo
+    - maligned
+    - dupl
+    - goconst
+    - gocritic
+
+linters-settings:
+  govet:
+    check-shadowing: true
+    enable-all: true
+    disable:
+      - fieldalignment
+
+  golint:
+    min-confidence: 0.8
+
+  gofmt:
+    simplify: true
+
+  goimports:
+    local-prefixes: github.com/your-org/aicd
+
+  staticcheck:
+    checks: ["all"]
+
+  gosec:
+    excludes:
+      - G104
+    severity: medium
+
+  gocyclo:
+    min-complexity: 15
+
+  maligned:
+    suggest-new: true
+
+  dupl:
+    threshold: 100
+
+  goconst:
+    min-occurrences: 3
+    min-string-len: 3
+    ignore-tests: true
+
+  gocritic:
+    enabled-checks:
+      - appendAssign
+      - appendResult
+      - argOrder
+      - assignOp
+      - badCall
+      - badCond
+      - badRegexp
+      - boolExprSimplify
+      - builtinShadow
+      - builtinTypeDef
+      - captLocal
+      - caseOrder
+      - commentedOutCode
+      - commentFormatting
+      - commentedOutImport
+      - defaultCaseOrder
+      - deferUnlambda
+      - docArg
+      - dupImport
+      - dupSubExpr
+      - elseif
+      - emptyFallthrough
+      - emptyStringTest
+      - equalFold
+      - exitAfterDefer
+      - flagName
+      - hexLiteral
+      - hugeParam
+      - ifElseChain
+      - importShadow
+      - indexAlloc
+      - initClause
+      - intShadow
+      - lenAssign
+      - loopClosure
+      - methodCallVal
+      - nilValueRecv
+      - octalLiteral
+      - offBy1
+      - paramTypeCombine
+      - ptrToRef
+      - rangeExprCopy
+      - regexpRaw
+      - ruleguard
+      - sliceClear
+      - sloppyTypeAssert
+      - sortSlice
+      - sprintf
+      - stringConcat
+      - stringTypeInSignature
+      - switchTrue
+      - typeSwitchVar
+      - typeUnparen
+      - typedUnderscore
+      - unlint
+      - unnecessaryBlock
+      - unslice
+      - valSwap
+      - weakCond
+      - whyNoLint
+      - wrapperFunc
+
+issues:
+  exclude-use-default: false
+  exclude:
+    - "exported .* should have comment"
+    - "should have comment or be unexported"
+    - "comment on exported .+ should be of the form .*"
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  new: false
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - dupl
+        - goconst
+        - maligned
+        - gosec
+        - gocritic
+    - path: internal/testutils
+      linters:
+        - goconst
+        - gosec
+    - linters:
+        - gosec
+      text: "G404: Use of weak random number generator"
+
+run:
+  timeout: 5m
+  skip-dirs:
+    - internal/mocks
+    - internal/testutils
+  skip-files:
+    - ".*\\.pb\\.go$"
+    - ".*\\.gen\\.go$"

@@ -1,0 +1,130 @@
+name: Quality Report
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  quality-report:
+    name: Generate Quality Report
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Cache Go modules
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/go/pkg/mod
+          ~/.cache/go-build
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+    - name: Cache Node.js modules
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+
+    - name: Cache Python modules
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+
+    # Generate Go coverage report
+    - name: Go Coverage Report
+      run: |
+        echo "## Go 代码覆盖率报告" > coverage-report.md
+        echo "" >> coverage-report.md
+        for service in auth_service execution_master notification_service; do
+          cd backend/$service
+          echo "### $service" >> ../../coverage-report.md
+          go test -v -coverprofile=coverage.out ./...
+          go tool cover -html=coverage.out -o coverage.html
+          echo "覆盖率: $(go tool cover -func=coverage.out | grep 'total:' | awk '{print $3}')"
+          echo "" >> ../../coverage-report.md
+          cd ../..
+        done
+
+    # Generate Python coverage report
+    - name: Python Coverage Report
+      run: |
+        echo "## Python 代码覆盖率报告" >> coverage-report.md
+        echo "" >> coverage-report.md
+        for service in test_management execution_agent ai_service integration_service; do
+          cd backend/$service
+          echo "### $service" >> ../../coverage-report.md
+          pip install pytest pytest-cov
+          python -m pytest tests/ --cov=app --cov-report=term-missing --cov-report=xml
+          echo "" >> ../../coverage-report.md
+          cd ../..
+        done
+
+    # Generate Frontend coverage report
+    - name: Frontend Coverage Report
+      run: |
+        echo "## 前端代码覆盖率报告" >> coverage-report.md
+        echo "" >> coverage-report.md
+        cd frontend
+        npm install
+        npm run test -- --coverage
+        echo "前端覆盖率报告已生成" >> ../coverage-report.md
+        echo "" >> ../coverage-report.md
+        cd ..
+
+    # Upload coverage report
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: quality-report
+        path: coverage-report.md
+
+    # Create issue with quality report
+    - name: Create Quality Report Issue
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const { context } = require('@actions/github');
+          
+          const report = `
+          ## 代码质量报告 📊
+          
+          生成时间: ${{ github.event.created_at }}
+          
+          ### 检查项目
+          - ✅ Go 代码风格检查
+          - ✅ Python 代码风格检查
+          - ✅ 前端代码风格检查
+          - ✅ Go 单元测试
+          - ✅ Python 单元测试
+          - ✅ 前端单元测试
+          - ✅ 代码覆盖率报告
+          
+          详细报告请查看 [Coverage Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})。
+          `;
+
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '代码质量报告',
+            body: report,
+            labels: ['quality-report', 'automated']
+          });

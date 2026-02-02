@@ -1,0 +1,142 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  pr-check:
+    name: PR Code Quality Check
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Cache Go modules
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/go/pkg/mod
+          ~/.cache/go-build
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+    - name: Cache Node.js modules
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+
+    - name: Cache Python modules
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+
+    # Go Lint
+    - name: Go Lint
+      run: |
+        for service in auth_service execution_master notification_service; do
+          cd backend/$service
+          echo "Linting $service..."
+          go fmt ./...
+          go vet ./...
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.54.2
+          golangci-lint run --timeout=5m
+          cd ../..
+        done
+
+    # Python Lint
+    - name: Python Lint
+      run: |
+        for service in test_management execution_agent ai_service integration_service; do
+          cd backend/$service
+          echo "Linting $service..."
+          pip install flake8 black isort
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          black --check .
+          isort --check-only .
+          cd ../..
+        done
+
+    # Frontend Lint
+    - name: Frontend Lint
+      run: |
+        cd frontend
+        echo "Linting frontend..."
+        npm install
+        npm run lint
+
+    # Go Tests
+    - name: Go Tests
+      run: |
+        for service in auth_service execution_master notification_service; do
+          cd backend/$service
+          echo "Testing $service..."
+          go test -v -race -timeout=30s ./...
+          cd ../..
+        done
+
+    # Python Tests
+    - name: Python Tests
+      run: |
+        for service in test_management execution_agent ai_service integration_service; do
+          cd backend/$service
+          echo "Testing $service..."
+          pip install pytest pytest-cov
+          python -m pytest tests/ -v --cov=app --cov-report=xml
+          cd ../..
+        done
+
+    # Frontend Tests
+    - name: Frontend Tests
+      run: |
+        cd frontend
+        echo "Testing frontend..."
+        npm install
+        npm run test
+
+    # Comment on PR
+    - name: Comment on PR
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const { context } = require('@actions/github');
+          
+          const comment = `
+          ## PR 检查结果 ✅
+          
+          所有代码检查和单元测试都已通过！
+          
+          ### 检查项目
+          - ✅ Go 代码风格检查
+          - ✅ Python 代码风格检查
+          - ✅ 前端代码风格检查
+          - ✅ Go 单元测试
+          - ✅ Python 单元测试
+          - ✅ 前端单元测试
+          
+          可以安全合并此 PR。
+          `;
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
