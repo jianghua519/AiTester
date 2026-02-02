@@ -1,0 +1,95 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+*.pyc
+*.pyo
+*.pyd
+
+# Node.js
+node_modules/
+dist/
+build/
+.env.local
+.nuxt
+.next
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Test evidence
+test_evidence/
+screenshots/
+tests/evidence/
+
+# Secrets
+.env
+*.pem
+*.key
+*.secret
+credentials.json
+
+# Kubernetes
+*.kubeconfig
+.kube/
+
+# Docker
+.docker/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+.cache/
+
+# Package managers
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build artifacts
+*.tar.gz
+*.zip
+*.tgz
+
+# Coverage reports
+coverage/
+.nyc_output/
+htmlcov/
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# PyCharm
+.pytest_cache/
+.spyderproject
+.spyproject
+
+# VS Code
+.history/
+*.code-workspace
+
+# Local development
+local/
+.dev/
