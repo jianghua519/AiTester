@@ -4,11 +4,11 @@ server:
   mode: "debug"
 
 database:
-  host: "localhost"
+  host: "postgresql-service"
   port: 5432
-  user: "aicd"
+  user: "aicd_user"
   password: "aicd_password"
-  name: "aicd_auth"
+  name: "aicd_dev"
 
 jwt:
   secret: "your-secret-key-change-in-production"
