@@ -1,0 +1,9 @@
+NAME                                             READY   STATUS    RESTARTS   AGE
+coredns-5d78c9869d-6gt8r                         1/1     Running   0          17m
+coredns-5d78c9869d-vh6dw                         1/1     Running   0          17m
+etcd-aicd-dev-control-plane                      1/1     Running   0          18m
+kindnet-x6554                                    1/1     Running   0          17m
+kube-apiserver-aicd-dev-control-plane            1/1     Running   0          18m
+kube-controller-manager-aicd-dev-control-plane   1/1     Running   0          18m
+kube-proxy-97744                                 1/1     Running   0          17m
+kube-scheduler-aicd-dev-control-plane            1/1     Running   0          18m

@@ -1,0 +1,2 @@
+NAME                     STATUS   ROLES           AGE   VERSION
+aicd-dev-control-plane   Ready    control-plane   18m   v1.27.3

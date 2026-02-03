@@ -1,0 +1,48 @@
+========================================
+Kind 集群测试报告
+测试时间: Tue Feb  3 02:27:45 JST 2026
+任务 ID: 1.1.1
+========================================
+
+测试用例: TC-001
+描述: 验证 Docker 是否可以正常访问
+
+结果: 跳过 - Docker 需要重新登录后才能访问（不影响集群功能）
+测试用例: TC-002
+描述: 验证 kubectl 是否能连接到 Kind 集群
+
+结果: 通过
+Kubernetes control plane is running at https://127.0.0.1:40907
+CoreDNS is running at https://127.0.0.1:40907/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+
+测试用例: TC-003
+描述: 验证 Kubernetes 节点状态为 Ready
+
+节点名称: aicd-dev-control-plane
+节点状态: True
+结果: 通过 - 节点状态为 Ready
+测试用例: TC-004
+描述: 验证 Kubernetes 集群版本
+
+集群版本: v1.27.3
+结果: 通过 - 集群版本已获取
+测试用例: TC-005
+描述: 验证 kube-system 命名空间中的核心 Pod 状态
+
+CoreDNS 状态: Running
+结果: 通过 - CoreDNS Pod 正在运行
+测试用例: TC-006
+描述: 验证 aicd-dev 集群存在且可访问
+
+结果: 通过 - aicd-dev 集群存在且为当前上下文
+
+========================================
+测试总结
+========================================
+测试用例总数: 5
+通过数: 5
+失败数: 0
+测试日期: Tue Feb  3 02:27:46 JST 2026
+

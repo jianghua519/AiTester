@@ -1,0 +1,3 @@
+ERROR: failed to list clusters: command "docker ps -a --filter label=io.x-k8s.kind.cluster --format '{{.Label "io.x-k8s.kind.cluster"}}'" failed with error: exit status 1
+
+Command Output: permission denied while trying to connect to the docker API at unix:///var/run/docker.sock
