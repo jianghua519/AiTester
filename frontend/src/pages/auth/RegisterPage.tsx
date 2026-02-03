@@ -1,35 +1,83 @@
-import React, { useState } from 'react'
+import React from 'react'
+import { useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
+import { useMutation } from '@tanstack/react-query'
+import { useAuthStore } from '../../store/auth'
+import { authService } from '../../services/auth'
+
+// 表单验证模式
+const registerSchema = yup.object({
+  username: yup.string()
+    .min(3, 'auth.usernameMin')
+    .max(20, 'auth.usernameMax')
+    .matches(/^[a-zA-Z0-9_]+$/, 'auth.usernameInvalid')
+    .required('auth.usernameRequired'),
+  email: yup.string()
+    .email('auth.emailInvalid')
+    .required('auth.emailRequired'),
+  password: yup.string()
+    .min(8, 'auth.passwordMin')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'auth.passwordInvalid')
+    .required('auth.passwordRequired'),
+  confirmPassword: yup.string()
+    .oneOf([yup.ref('password')], 'auth.passwordMismatch')
+    .required('auth.confirmPasswordRequired')
+})
+
+interface RegisterFormData {
+  username: string
+  email: string
+  password: string
+  confirmPassword: string
+}
 
 interface RegisterPageProps {
-  onRegisterSuccess: () => void
   onNavigateToLogin: () => void
 }
 
-export const RegisterPage: React.FC<RegisterPageProps> = ({
-  onRegisterSuccess,
-  onNavigateToLogin
-}) => {
+export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigateToLogin }) => {
   const { t } = useTranslation()
-  const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate()
+  const { register } = useAuthStore()
 
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting }
+  } = useForm<RegisterFormData>({
+    resolver: yupResolver(registerSchema),
+    defaultValues: {
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
+    }
+  })
 
-  const validatePassword = (password: string): boolean => {
-    return password.length >= 8 && /[a-z]/.test(password) && /[A-Z]/.test(password) && /\d/.test(password)
-  }
+  const watchedPassword = watch('password')
 
-  const validateUsername = (username: string): boolean => {
-    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/
-    return usernameRegex.test(username)
+  // 注册 Mutation
+  const registerMutation = useMutation({
+    mutationFn: (data: Omit<RegisterFormData, 'confirmPassword'>) => 
+      register(data.username, data.email, data.password),
+    onSuccess: () => {
+      // 注册成功后跳转到登录页
+      navigate('/login')
+    },
+    onError: (error: Error) => {
+      // 错误已经在 store 中处理
+      console.error('注册失败:', error)
+    }
+  })
+
+  const onSubmit = (data: RegisterFormData) => {
+    // 移除 confirmPassword 字段
+    const { confirmPassword, ...registerData } = data
+    registerMutation.mutate(registerData)
   }
 
   const getPasswordStrength = (password: string): 'weak' | 'medium' | 'strong' => {
@@ -50,72 +98,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
     }
   }
 
-  const getPasswordStrengthText = (strength: string): string => {
-    switch (strength) {
-      case 'weak': return t('auth.passwordWeak')
-      case 'medium': return t('auth.passwordMedium')
-      case 'strong': return t('auth.passwordStrong')
-      default: return ''
-    }
-  }
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    // 验证输入
-    if (!username.trim()) {
-      setError(t('auth.usernameRequired'))
-      return
-    }
-    
-    if (!validateUsername(username)) {
-      setError(t('auth.usernameInvalid'))
-      return
-    }
-    
-    if (!email.trim()) {
-      setError(t('auth.emailRequired'))
-      return
-    }
-    
-    if (!validateEmail(email)) {
-      setError(t('auth.emailInvalid'))
-      return
-    }
-    
-    if (!password.trim()) {
-      setError(t('auth.passwordRequired'))
-      return
-    }
-    
-    if (!validatePassword(password)) {
-      setError(t('auth.passwordInvalid'))
-      return
-    }
-    
-    if (password !== confirmPassword) {
-      setError(t('auth.passwordMismatch'))
-      return
-    }
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      // TODO: 调用注册API
-      console.log('注册请求:', { username, email, password })
-      
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      // 模拟成功响应
-      onRegisterSuccess()
-    } catch (err) {
-      setError(t('auth.registrationFailed'))
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const isLoading = registerMutation.isSubmitting || isSubmitting
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -129,7 +112,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
           </p>
         </div>
         
-        <form className="mt-8 space-y-6" onSubmit={handleRegister}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
@@ -137,14 +120,14 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
               </label>
               <input
                 id="username"
-                name="username"
+                {...control.register('username')}
                 type="text"
-                required
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 placeholder={t('auth.enterUsername')}
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
               />
+              {errors.username && (
+                <p className="mt-1 text-sm text-red-600">{errors.username.message}</p>
+              )}
             </div>
             
             <div>
@@ -153,15 +136,15 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
               </label>
               <input
                 id="email"
-                name="email"
+                {...control.register('email')}
                 type="email"
                 autoComplete="email"
-                required
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 placeholder={t('auth.enterEmail')}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
               />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+              )}
             </div>
             
             <div>
@@ -170,18 +153,18 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
               </label>
               <input
                 id="password"
-                name="password"
+                {...control.register('password')}
                 type="password"
                 autoComplete="new-password"
-                required
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 placeholder={t('auth.enterPassword')}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
               />
-              {password && (
-                <p className={`mt-1 text-xs ${getPasswordStrengthColor(getPasswordStrength(password))}`}>
-                  {getPasswordStrengthText(getPasswordStrength(password))}
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+              )}
+              {watchedPassword && (
+                <p className={`mt-1 text-xs ${getPasswordStrengthColor(getPasswordStrength(watchedPassword))}`}>
+                  {t(`auth.password${getPasswordStrength(watchedPassword).charAt(0).toUpperCase() + getPasswordStrength(watchedPassword).slice(1)}`)}
                 </p>
               )}
             </div>
@@ -192,19 +175,20 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
               </label>
               <input
                 id="confirm-password"
-                name="confirm-password"
+                {...control.register('confirmPassword')}
                 type="password"
                 autoComplete="new-password"
-                required
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 placeholder={t('auth.confirmPassword')}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
               />
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>
+              )}
             </div>
           </div>
 
-          {error && (
+          {/* 错误信息显示 */}
+          {registerMutation.error && (
             <div className="bg-red-50 border border-red-200 rounded-md p-3">
               <div className="flex">
                 <div className="flex-shrink-0">
@@ -213,7 +197,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-red-800">{error}</p>
+                  <p className="text-sm text-red-800">{registerMutation.error.message}</p>
                 </div>
               </div>
             </div>

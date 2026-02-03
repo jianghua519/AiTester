@@ -1,64 +1,66 @@
-import React, { useState } from 'react'
+import React from 'react'
+import { useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
+import { useMutation } from '@tanstack/react-query'
+import { useAuthStore } from '../../store/auth'
+import { authService } from '../../services/auth'
+
+// 表单验证模式
+const loginSchema = yup.object({
+  email: yup.string()
+    .email('auth.emailInvalid')
+    .required('auth.emailRequired'),
+  password: yup.string()
+    .required('auth.passwordRequired')
+})
+
+interface LoginFormData {
+  email: string
+  password: string
+}
 
 interface LoginPageProps {
-  onLoginSuccess: (token: string) => void
   onNavigateToRegister: () => void
 }
 
-export const LoginPage: React.FC<LoginPageProps> = ({
-  onLoginSuccess,
-  onNavigateToRegister
-}) => {
+export const LoginPage: React.FC<LoginPageProps> = ({ onNavigateToRegister }) => {
   const { t } = useTranslation()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate()
+  const { login } = useAuthStore()
 
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting }
+  } = useForm<LoginFormData>({
+    resolver: yupResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: ''
+    }
+  })
+
+  // 登录 Mutation
+  const loginMutation = useMutation({
+    mutationFn: (data: LoginFormData) => login(data.email, data.password),
+    onSuccess: () => {
+      // 登录成功后跳转到仪表盘
+      navigate('/dashboard')
+    },
+    onError: (error: Error) => {
+      // 错误已经在 store 中处理，这里可以添加额外的错误处理逻辑
+      console.error('登录失败:', error)
+    }
+  })
+
+  const onSubmit = (data: LoginFormData) => {
+    loginMutation.mutate(data)
   }
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    // 验证输入
-    if (!email.trim()) {
-      setError(t('auth.emailRequired'))
-      return
-    }
-    
-    if (!validateEmail(email)) {
-      setError(t('auth.emailInvalid'))
-      return
-    }
-    
-    if (!password.trim()) {
-      setError(t('auth.passwordRequired'))
-      return
-    }
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      // TODO: 调用登录API
-      console.log('登录请求:', { email, password })
-      
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // 模拟成功响应
-      const mockToken = 'mock-jwt-token-' + Date.now()
-      onLoginSuccess(mockToken)
-    } catch (err) {
-      setError(t('auth.loginFailed'))
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const isLoading = loginMutation.isSubmitting || isSubmitting
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -72,23 +74,23 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           </p>
         </div>
         
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="email-address" className="sr-only">
+              <label htmlFor="email" className="sr-only">
                 {t('auth.email')}
               </label>
               <input
-                id="email-address"
-                name="email"
+                id="email"
+                {...control.register('email')}
                 type="email"
                 autoComplete="email"
-                required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder={t('auth.email')}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
               />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+              )}
             </div>
             <div>
               <label htmlFor="password" className="sr-only">
@@ -96,19 +98,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               </label>
               <input
                 id="password"
-                name="password"
+                {...control.register('password')}
                 type="password"
                 autoComplete="current-password"
-                required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder={t('auth.password')}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
               />
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+              )}
             </div>
           </div>
 
-          {error && (
+          {/* 错误信息显示 */}
+          {loginMutation.error && (
             <div className="bg-red-50 border border-red-200 rounded-md p-3">
               <div className="flex">
                 <div className="flex-shrink-0">
@@ -117,7 +120,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-red-800">{error}</p>
+                  <p className="text-sm text-red-800">{loginMutation.error.message}</p>
                 </div>
               </div>
             </div>
@@ -127,7 +130,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             <div className="flex items-center">
               <input
                 id="remember-me"
-                name="remember-me"
                 type="checkbox"
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />

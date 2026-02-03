@@ -30,6 +30,28 @@
     "usernameInvalid": "ユーザー名は文字、数字、アンダースコアのみ使用可能で、3-20文字です",
     "passwordMismatch": "パスワードが一致しません",
     "loginFailed": "サインインに失敗しました。メールアドレスとパスワードを確認してください",
-    "registrationFailed": "登録に失敗しました。後でもう一度お試しください"
+    "registrationFailed": "登録に失敗しました。後でもう一度お試しください",
+    "networkError": "ネットワーク接続に失敗しました。接続を確認してください",
+    "forbidden": "アクセスが拒否されました。権限が不足しています",
+    "tooManyAttempts": "試行回数が多すぎます。後でもう一度お試しください",
+    "emailOrUsernameExists": "メールアドレスまたはユーザー名は既に存在します",
+    "invalidData": "リクエストデータが無効です",
+    "usernameMin": "ユーザー名は最低3文字必要です",
+    "usernameMax": "ユーザー名は最大20文字までです",
+    "confirmPasswordRequired": "パスワードを確認してください",
+    "logout": "ログアウト"
+  },
+  "dashboard": {
+    "testCases": "テストケース",
+    "totalTestCases": "合計ケース",
+    "passed": "合格",
+    "passedTests": "合格テスト",
+    "failed": "不合格",
+    "failedTests": "不合格テスト",
+    "quickActions": "クイックアクション",
+    "createTestCase": "テストケース作成",
+    "createTestSuite": "テストスイート作成",
+    "createTestPlan": "テストプラン作成",
+    "viewReports": "レポート表示"
   }
 }

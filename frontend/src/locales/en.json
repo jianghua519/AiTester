@@ -30,6 +30,28 @@
     "usernameInvalid": "Username can only contain letters, numbers and underscores, 3-20 characters",
     "passwordMismatch": "Passwords do not match",
     "loginFailed": "Login failed, please check your email and password",
-    "registrationFailed": "Registration failed, please try again later"
+    "registrationFailed": "Registration failed, please try again later",
+    "networkError": "Network connection failed, please check your connection",
+    "forbidden": "Access denied, insufficient permissions",
+    "tooManyAttempts": "Too many attempts, please try again later",
+    "emailOrUsernameExists": "Email or username already exists",
+    "invalidData": "Invalid request data",
+    "usernameMin": "Username must be at least 3 characters",
+    "usernameMax": "Username must be no more than 20 characters",
+    "confirmPasswordRequired": "Please confirm your password",
+    "logout": "Logout"
+  },
+  "dashboard": {
+    "testCases": "Test Cases",
+    "totalTestCases": "Total Cases",
+    "passed": "Passed",
+    "passedTests": "Passed Tests",
+    "failed": "Failed",
+    "failedTests": "Failed Tests",
+    "quickActions": "Quick Actions",
+    "createTestCase": "Create Test Case",
+    "createTestSuite": "Create Test Suite",
+    "createTestPlan": "Create Test Plan",
+    "viewReports": "View Reports"
   }
 }
