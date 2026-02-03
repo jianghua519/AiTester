@@ -53,5 +53,27 @@
     "createTestSuite": "Create Test Suite",
     "createTestPlan": "Create Test Plan",
     "viewReports": "View Reports"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "testCases": "Test Cases",
+    "testSuites": "Test Suites",
+    "testPlans": "Test Plans",
+    "testRuns": "Test Runs",
+    "settings": "Settings"
+  },
+  "header": {
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "project": {
+    "search": "Search projects...",
+    "noProjectsFound": "No projects found",
+    "members": "members",
+    "manageProjects": "Manage Projects",
+    "loading": "Loading...",
+    "fetchError": "Failed to fetch projects",
+    "noProjects": "No projects available"
   }
 }

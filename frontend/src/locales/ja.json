@@ -53,5 +53,27 @@
     "createTestSuite": "テストスイート作成",
     "createTestPlan": "テストプラン作成",
     "viewReports": "レポート表示"
+  },
+  "sidebar": {
+    "dashboard": "ダッシュボード",
+    "testCases": "テストケース",
+    "testSuites": "テストスイート",
+    "testPlans": "テストプラン",
+    "testRuns": "テスト実行",
+    "settings": "設定"
+  },
+  "header": {
+    "profile": "プロフィール",
+    "settings": "設定",
+    "logout": "ログアウト"
+  },
+  "project": {
+    "search": "プロジェクトを検索...",
+    "noProjectsFound": "プロジェクトが見つかりません",
+    "members": "メンバー",
+    "manageProjects": "プロジェクト管理",
+    "loading": "読み込み中...",
+    "fetchError": "プロジェクトの取得に失敗しました",
+    "noProjects": "利用可能なプロジェクトがありません"
   }
 }

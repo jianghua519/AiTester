@@ -53,5 +53,27 @@
     "createTestSuite": "创建测试套件",
     "createTestPlan": "创建测试计划",
     "viewReports": "查看报告"
+  },
+  "sidebar": {
+    "dashboard": "仪表盘",
+    "testCases": "测试用例",
+    "testSuites": "测试套件",
+    "testPlans": "测试计划",
+    "testRuns": "测试运行",
+    "settings": "设置"
+  },
+  "header": {
+    "profile": "个人资料",
+    "settings": "设置",
+    "logout": "退出登录"
+  },
+  "project": {
+    "search": "搜索项目...",
+    "noProjectsFound": "未找到项目",
+    "members": "成员",
+    "manageProjects": "管理项目",
+    "loading": "加载中...",
+    "fetchError": "获取项目失败",
+    "noProjects": "暂无可用项目"
   }
 }
