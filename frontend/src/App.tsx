@@ -4,6 +4,7 @@ import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { MainLayout } from './components/layout/MainLayout'
+import { TestCasesPage } from './pages/testcases/TestCasesPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore()
@@ -34,12 +35,7 @@ function App() {
             path="/test-cases" 
             element={
               <ProtectedRoute>
-                <div className="p-6">
-                  <h1 className="text-2xl font-bold text-gray-900 mb-4">Test Cases</h1>
-                  <div className="bg-white rounded-lg shadow p-6">
-                    <p className="text-gray-600">Test cases management page will be implemented here.</p>
-                  </div>
-                </div>
+                <TestCasesPage />
               </ProtectedRoute>
             } 
           />
